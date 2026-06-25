@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة تحكم التوظيف الداخلي | الإدارة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --train-color: #00866a; --main-color: #00a884; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f0f2f5; padding: 20px; direction: rtl; }
+        .admin-card { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--train-color); }
+        h2 { color: #2c3e50; text-align: center; margin-bottom: 25px; font-weight: 900; }
+        .form-section { background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eef0f2; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #34495e; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; font-family: 'Cairo'; box-sizing: border-box; font-weight: bold; outline: none; }
+        input:focus, select:focus { border-color: var(--main-color); }
+        .btn-update { width: 100%; padding: 15px; background: linear-gradient(45deg, var(--train-color), #00a884); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-update:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,168,132,0.4); }
+        .course-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
+        .course-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #eee; font-weight: bold; }
+        .status-badge { padding: 4px 10px; border-radius: 5px; font-size: 0.85rem; color: white; margin-right: 10px; }
+        
+        #loginSection { max-width: 420px; margin: 80px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); text-align: center; border-top: 8px solid var(--train-color); }
+        #adminPanel { display: none; }
+        .user-select { margin-bottom: 15px; border: 2px solid #ddd; outline: none; }
+        .logout-link { display: block; text-align: center; margin-top: 25px; color: #e74c3c; cursor: pointer; font-weight: bold; text-decoration: underline; transition: 0.3s; }
+        .action-btns { display: flex; gap: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="loginSection">
+    <i class="fas fa-briefcase" style="font-size: 4rem; color: var(--train-color); margin-bottom: 20px;"></i>
+    <h2>إدارة التوظيف الداخلي</h2>
+    <p style="color: #34495e; margin-bottom: 25px;">اختر حسابك وأدخل كلمة السر للتحكم بالوظائف</p>
+    
+    <select id="userName" class="user-select" style="width: 100%; padding: 12px; border-radius: 10px; font-family: 'Cairo';">
+        <option value="">-- اختر المستخدم --</option>
+        <option value="admin">إدارة التوظيف</option>
+        <option value="user1">د. أحمد (موارد بشرية)</option>
+        <option value="user2">الممرض الرشيد</option>
+    </select>
+
+    <input type="password" id="adminPass" placeholder="كلمة المرور السرية" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; font-family: 'Cairo'; box-sizing: border-box;">
+    <button class="btn-update" onclick="verifyAccess()">فتح اللوحة الآمنة</button>
+    <p id="loginError" style="color: #ef4444; display: none; margin-top: 15px; font-weight: bold;">بيانات الدخول غير صحيحة!</p>
+</div>
+
+<div id="adminPanel">
+    <div class="admin-card">
+        <h2><i class="fas fa-tools"></i> إدارة الوظائف المتاحة</h2>
+        
+        <div class="form-section">
+            <input type="hidden" id="editJobId" value="">
+            
+            <label>المسمى الوظيفي</label>
+            <input type="text" id="jobTitle" placeholder="مثلاً: مسؤول إعلام وتسويق">
+            
+            <label>حالة الوظيفة</label>
+            <select id="jobStatus">
+                <option value="available">متاحة للتقديم (تظهر في القائمة)</option>
+                <option value="closed">مغلقة / مكتفية (لا تظهر)</option>
+            </select>
+        </div>
+
+        <button class="btn-update" id="mainSubmitBtn" onclick="pushToFirebase()">نشر وتحديث الوظيفة</button>
+
+        <div class="course-list" id="jobAdminList">
+            <div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> جاري جلب الوظائف...</div>
+        </div>
+            
+        <span class="logout-link" onclick="location.reload()"><i class="fas fa-lock"></i> تسجيل الخروج وإقفال اللوحة</span>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCV9VgyvYcJBt18HKrCretAc8hZ_JR3Inw",
+        authDomain: "medical-for-you.firebaseapp.com",
+        projectId: "medical-for-you",
+        storageBucket: "medical-for-you.firebasestorage.app",
+        messagingSenderId: "588946718616",
+        appId: "1:588946718616:web:230d9bf91b96cbefaab5ed",
+        measurementId: "G-5RCFXF7ZH6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const usersList = { "admin": "0960", "user1": "HR123", "user2": "0960" };
+    window.jobDataMap = {};
+
+    window.verifyAccess = () => {
+        const user = document.getElementById('userName').value;
+        const pass = document.getElementById('adminPass').value;
+        if (user && usersList[user] === pass) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('adminPass').value = "";
+        }
+    };
+
+    window.pushToFirebase = () => {
+        const id = document.getElementById('editJobId').value;
+        const title = document.getElementById('jobTitle').value;
+        const status = document.getElementById('jobStatus').value;
+        
+        if (!title) return alert("الرجاء إدخال المسمى الوظيفي!");
+
+        if (id) {
+            update(ref(db, 'internal_jobs/' + id), { title, status }).then(() => {
+                alert("✅ تم تعديل الوظيفة بنجاح!");
+                resetForm();
+            });
+        } else {
+            push(ref(db, 'internal_jobs'), { title, status }).then(() => {
+                alert("✅ تم إضافة الوظيفة بنجاح!");
+                resetForm();
+            });
+        }
+    };
+
+    function resetForm() {
+        document.getElementById('editJobId').value = "";
+        document.getElementById('jobTitle').value = "";
+        document.getElementById('jobStatus').value = "available";
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerText = "نشر وتحديث الوظيفة";
+        btn.style.background = "linear-gradient(45deg, var(--train-color), #00a884)";
+    }
+
+    onValue(ref(db, 'internal_jobs'), (snapshot) => {
+        const list = document.getElementById('jobAdminList');
+        list.innerHTML = '<h4>الوظائف المسجلة:</h4>';
+        window.jobDataMap = {}; 
+        
+        if(!snapshot.exists()) {
+            list.innerHTML += '<p style="text-align:center; color:#777;">لا توجد وظائف حالياً.</p>';
+            return;
+        }
+
+        snapshot.forEach(child => {
+            const data = child.val();
+            window.jobDataMap[child.key] = data; 
+            
+            const color = data.status === 'available' ? '#00a884' : '#e74c3c';
+            const statusText = data.status === 'available' ? 'متاحة' : 'مغلقة';
+            
+            list.innerHTML += `
+            <div class="course-item">
+                <span>${data.title} <span class="status-badge" style="background:${color}">${statusText}</span></span>
+                <div class="action-btns">
+                    <button onclick="prepareEdit('${child.key}')" style="background:#f39c12; color:white; border:none; border-radius:5px; cursor:pointer; padding: 6px 12px; font-family: 'Cairo';"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteJob('${child.key}')" style="background:#e74c3c; color:white; border:none; border-radius:5px; cursor:pointer; padding: 6px 12px; font-family: 'Cairo';"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
+    });
+
+    window.deleteJob = (key) => {
+        if(confirm("هل أنت متأكد من حذف هذه الوظيفة نهائياً؟")) {
+            remove(ref(db, 'internal_jobs/' + key));
+        }
+    };
+
+    window.prepareEdit = (key) => {
+        const data = window.jobDataMap[key];
+        if(!data) return;
+        
+        document.getElementById('editJobId').value = key;
+        document.getElementById('jobTitle').value = data.title;
+        document.getElementById('jobStatus').value = data.status;
+        
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerText = "حفظ التعديلات للوظيفة 💾";
+        btn.style.background = "linear-gradient(45deg, #f39c12, #e67e22)"; 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+</script>
+</body>
+</html>

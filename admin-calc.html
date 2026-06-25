@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الحاسبة السريرية | شبكة الممرضين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --main-color: #00a884; 
+            --dark-blue: #1e272e;
+            --bg-color: #f4f7f6;
+        }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); padding: 20px; direction: rtl; margin: 0; }
+        
+        .admin-card { background: white; max-width: 750px; margin: 0 auto; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 8px solid var(--main-color); }
+        h2 { color: var(--dark-blue); text-align: center; margin-bottom: 25px; font-weight: 900; }
+        
+        .form-section { background: #fdfdfd; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #475569; font-size: 1.1rem; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; box-sizing: border-box; font-size: 1rem; transition: 0.3s; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: var(--main-color); outline: none; background: white; box-shadow: 0 0 0 4px rgba(0,168,132,0.1); }
+        
+        .btn-update { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--main-color), #059669); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-update:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,168,132,0.4); }
+        
+        .course-list { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+        .course-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s; }
+        .course-item:hover { border-color: var(--main-color); transform: translateY(-2px); }
+        .course-item-title { font-weight: bold; color: var(--dark-blue); flex-grow: 1; }
+        
+        /* شاشة الدخول */
+        #loginSection { max-width: 420px; margin: 80px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid var(--main-color); }
+        #adminPanel { display: none; }
+        .logout-link { display: block; text-align: center; margin-top: 25px; color: #ef4444; cursor: pointer; font-weight: bold; text-decoration: none; transition: 0.3s; font-size: 1.1rem; }
+        .logout-link:hover { color: #dc2626; text-decoration: underline; }
+        
+        .action-btns { display: flex; gap: 8px; }
+        .action-btns button { padding: 8px 12px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; color: white; display: flex; align-items: center; gap: 5px; }
+        .btn-edit { background: #3498db; }
+        .btn-edit:hover { background: #2980b9; }
+        .btn-delete { background: #e74c3c; }
+        .btn-delete:hover { background: #c0392b; }
+
+        .row { display: flex; gap: 15px; }
+        .row > div { flex: 1; }
+        @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+    </style>
+</head>
+<body>
+
+<div id="loginSection">
+    <i class="fas fa-calculator" style="font-size: 4rem; color: var(--main-color); margin-bottom: 15px;"></i>
+    <h2>إدارة الحاسبة السريرية</h2>
+    <p style="color: #64748b; margin-bottom: 25px; font-weight: bold;">الرجاء تسجيل الدخول للوصول للوحة التحكم</p>
+    
+    <select id="userName" style="width: 100%; padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; margin-bottom: 15px;">
+        <option value="">-- اختر المستخدم --</option>
+        <option value="admin">مدير النظام</option>
+        <option value="alrasheed">الممرض الرشيد</option>
+    </select>
+
+    <input type="password" id="adminPass" placeholder="كلمة المرور" style="font-weight: bold; text-align: center;">
+    <button class="btn-update" onclick="verifyAccess()">دخول آمن <i class="fas fa-sign-in-alt"></i></button>
+    <p id="loginError" style="color: #e74c3c; display: none; margin-top: 15px; font-weight: bold;">بيانات الدخول غير صحيحة!</p>
+</div>
+
+<div id="adminPanel">
+    <div class="admin-card">
+        <h2><i class="fas fa-laptop-medical"></i> إضافة قوانين ومعادلات سريرية جديدة</h2>
+        
+        <div class="form-section" id="dataForm">
+            <input type="hidden" id="editKey">
+
+            <label>عنوان المعادلة / القانون</label>
+            <input type="text" id="calcTitle" placeholder="مثال: حاسبة مؤشر كتلة الجسم (BMI)...">
+            
+            <div class="row">
+                <div>
+                    <label>أيقونة المعادلة (FontAwesome)</label>
+                    <input type="text" id="calcIcon" placeholder="مثال: fa-weight" value="fa-calculator">
+                </div>
+                <div>
+                    <label>لون الكرت المميز</label>
+                    <input type="color" id="calcColor" value="#9b59b6" style="padding: 5px; cursor: pointer; height: 50px;">
+                </div>
+            </div>
+
+            <label>القانون / المعادلة الرياضية</label>
+            <input type="text" id="calcFormula" placeholder="مثال: الوزن بالكيلوجرام ÷ (الطول بالمتر × الطول بالمتر)">
+
+            <label>ملاحظات أو مثال توضيحي</label>
+            <textarea id="calcDesc" rows="3" placeholder="اكتب مثالاً يوضح للممرضين كيفية الحساب..."></textarea>
+        </div>
+
+        <button class="btn-update" id="mainSubmitBtn" onclick="pushToFirebase()">نشر المعادلة في الحاسبة <i class="fas fa-plus-circle"></i></button>
+        
+        <div class="course-list" id="adminList">
+            <h4 style="color: var(--dark-blue);"><i class="fas fa-list"></i> المعادلات المضافة حالياً:</h4>
+            <div id="listContent"></div>
+        </div>
+            
+        <a href="#" class="logout-link" onclick="location.reload()"><i class="fas fa-power-off"></i> تسجيل الخروج</a>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCV9VgyvYcJBt18HKrCretAc8hZ_JR3Inw",
+        authDomain: "medical-for-you.firebaseapp.com",
+        databaseURL: "https://medical-for-you-default-rtdb.firebaseio.com", 
+        projectId: "medical-for-you",
+        storageBucket: "medical-for-you.firebasestorage.app",
+        messagingSenderId: "588946718616",
+        appId: "1:588946718616:web:230d9bf91b96cbefaab5ed",
+        measurementId: "G-5RCFXF7ZH6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const usersList = {
+        "admin": "12345",   
+        "alrasheed": "0960" 
+    };
+
+    function verifyAccess() {
+        const user = document.getElementById('userName').value;
+        const pass = document.getElementById('adminPass').value;
+        if (user && usersList[user] === pass) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadData();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('adminPass').value = "";
+        }
+    }
+
+    window.currentDataMap = {};
+
+    function pushToFirebase() {
+        const title = document.getElementById('calcTitle').value;
+        const icon = document.getElementById('calcIcon').value || "fa-calculator";
+        const color = document.getElementById('calcColor').value;
+        const formula = document.getElementById('calcFormula').value;
+        const desc = document.getElementById('calcDesc').value;
+        
+        let editKey = document.getElementById('editKey').value;
+
+        if (!title || !formula) {
+            alert("يرجى إدخال عنوان المعادلة والقانون الرياضي على الأقل!");
+            return;
+        }
+
+        if (!editKey) editKey = "calc_" + Date.now(); 
+
+        const btn = document.getElementById('mainSubmitBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "جاري الحفظ... <i class='fas fa-spinner fa-spin'></i>";
+        btn.disabled = true;
+
+        database.ref('clinical_calculators/' + editKey).set({
+            title: title,
+            icon: icon.replace('fa-', ''), // تنظيف الأيقونة في حال كتب fa-
+            color: color,
+            formula: formula,
+            desc: desc,
+            timestamp: new Date().toLocaleString('ar-EG')
+        }).then(() => {
+            alert("✅ تم حفظ المعادلة بنجاح!");
+            resetForm();
+        }).catch((error) => alert("خطأ: " + error.message))
+          .finally(() => { btn.innerHTML = originalText; btn.disabled = false; });
+    }
+
+    function loadData() {
+        database.ref('clinical_calculators').on('value', (snapshot) => {
+            const list = document.getElementById('listContent');
+            list.innerHTML = '';
+            window.currentDataMap = {}; 
+            
+            if (!snapshot.exists()) {
+                list.innerHTML = `<p style="text-align: center; color: #888;">لا توجد معادلات مضافة حتى الآن.</p>`;
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const data = child.val();
+                window.currentDataMap[child.key] = data; 
+                list.innerHTML += `
+                <div class="course-item" style="border-right: 5px solid ${data.color};">
+                    <div class="course-item-title">
+                        <i class="fas fa-${data.icon}" style="color:${data.color}; margin-left:8px;"></i>
+                        <span>${data.title}</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-edit" onclick="prepareEdit('${child.key}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteItem('${child.key}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+        });
+    }
+
+    function deleteItem(key) {
+        if(confirm("هل أنت متأكد من حذف هذه المعادلة؟")) {
+            database.ref('clinical_calculators/' + key).remove();
+        }
+    }
+
+    function prepareEdit(key) {
+        const data = window.currentDataMap[key];
+        if(!data) return;
+        
+        document.getElementById('editKey').value = key;
+        document.getElementById('calcTitle').value = data.title || "";
+        document.getElementById('calcIcon').value = "fa-" + data.icon || "fa-calculator";
+        document.getElementById('calcColor').value = data.color || "#9b59b6";
+        document.getElementById('calcFormula').value = data.formula || "";
+        document.getElementById('calcDesc').value = data.desc || "";
+        
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerHTML = "حفظ التعديلات 💾";
+        btn.style.background = "linear-gradient(135deg, #3498db, #2980b9)"; 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('editKey').value = "";
+        document.getElementById('calcTitle').value = "";
+        document.getElementById('calcIcon').value = "fa-calculator";
+        document.getElementById('calcColor').value = "#9b59b6";
+        document.getElementById('calcFormula').value = "";
+        document.getElementById('calcDesc').value = "";
+        
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerHTML = "نشر المعادلة في الحاسبة <i class='fas fa-plus-circle'></i>";
+        btn.style.background = "linear-gradient(135deg, var(--main-color), #059669)";
+    }
+</script>
+</body>
+</html>

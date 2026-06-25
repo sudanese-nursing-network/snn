@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم شبكة الممرضين | الإدارة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --main-color: #00a884; 
+            --dark-blue: #1e272e;
+            --hover-color: #008f6f;
+        }
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; padding: 20px; direction: rtl; margin: 0; }
+        
+        .admin-card { background: white; max-width: 650px; margin: 0 auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 8px solid var(--main-color); }
+        h2 { color: var(--dark-blue); text-align: center; margin-bottom: 25px; font-weight: 900; }
+        
+        .form-section { background: #fdfdfd; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #34495e; font-size: 1.1rem; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; font-family: 'Cairo'; box-sizing: border-box; font-size: 1rem; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--main-color); outline: none; box-shadow: 0 0 8px rgba(0,168,132,0.2); }
+        
+        .btn-update { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--main-color), #00c69a); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; }
+        .btn-update:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,168,132,0.4); }
+        
+        .course-list { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+        .course-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .course-item-title { font-weight: bold; color: var(--dark-blue); flex-grow: 1; }
+        .status-badge { padding: 4px 10px; border-radius: 5px; font-size: 0.85rem; color: white; margin-right: 10px; font-weight: bold; }
+        
+        /* شاشة الدخول */
+        #loginSection { max-width: 420px; margin: 80px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid var(--main-color); }
+        #adminPanel { display: none; }
+        .logout-link { display: block; text-align: center; margin-top: 25px; color: var(--main-color); cursor: pointer; font-weight: bold; text-decoration: none; transition: 0.3s; font-size: 1.1rem; }
+        .logout-link:hover { color: var(--dark-blue); }
+        .action-btns { display: flex; gap: 8px; }
+        .action-btns button { padding: 8px 12px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; color: white; display: flex; align-items: center; gap: 5px; }
+        .btn-edit { background: var(--main-color); }
+        .btn-edit:hover { background: var(--hover-color); }
+        .btn-delete { background: #e74c3c; }
+        .btn-delete:hover { background: #c0392b; }
+
+        /* إخفاء الحقول حسب القسم */
+        .hidden-field { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="loginSection">
+    <img src="WhatsApp%20Image%202026-06-24%20at%2011.20.24%20AM.jpeg" alt="لوجو الشبكة" style="width: 100px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);" onerror="this.style.display='none'">
+    <i class="fas fa-user-shield" style="font-size: 3rem; color: var(--main-color); margin-bottom: 10px;" id="fallbackIcon"></i>
+    <h2>إدارة شبكة الممرضين</h2>
+    <p style="color: #666; margin-bottom: 25px; font-weight: bold;">الرجاء تسجيل الدخول للوصول للوحة التحكم</p>
+    
+    <select id="userName" style="width: 100%; padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold;">
+        <option value="">-- اختر المستخدم --</option>
+        <option value="admin">مدير النظام</option>
+        <option value="alrasheed">الممرض الرشيد</option>
+    </select>
+
+    <input type="password" id="adminPass" placeholder="كلمة المرور" style="font-weight: bold; text-align: center;">
+    <button class="btn-update" onclick="verifyAccess()">دخول آمن <i class="fas fa-sign-in-alt"></i></button>
+    <p id="loginError" style="color: #e74c3c; display: none; margin-top: 15px; font-weight: bold;">بيانات الدخول غير صحيحة!</p>
+</div>
+
+<div id="adminPanel">
+    <div class="admin-card">
+        <h2><i class="fas fa-sliders-h"></i> لوحة التحكم الشاملة</h2>
+        
+        <div class="form-section">
+            <label><i class="fas fa-layer-group"></i> القسم المراد إدارته:</label>
+            <select id="sectionSelect" onchange="changeSection()" style="background: #e8f8f5; border-color: var(--main-color); font-weight: bold; color: var(--main-color);">
+                <option value="projects">المشاريع (مشاريع الشبكة)</option>
+                <option value="announcements">الإعلانات والأحداث</option>
+                <option value="news">شريط الأخبار العاجلة (شريط التمرير)</option>
+            </select>
+        </div>
+
+        <div class="form-section" id="dataForm">
+            <input type="hidden" id="editKey"> <label id="lblTitle">عنوان العنصر</label>
+            <input type="text" id="inputTitle" placeholder="أدخل العنوان هنا...">
+            
+            <div id="descWrapper">
+                <label id="lblDesc">التفاصيل / الوصف</label>
+                <textarea id="inputDesc" rows="4" placeholder="اكتب التفاصيل هنا..."></textarea>
+            </div>
+
+            <div id="imgWrapper">
+                <label id="lblImg">رابط الصورة</label>
+                <input type="text" id="inputImg" placeholder="مثال: image.jpeg أو رابط من الإنترنت">
+            </div>
+
+            <div id="extraWrapper">
+                <label id="lblExtra">علامات مميزة (هاشتاج) / أخرى</label>
+                <input type="text" id="inputExtra" placeholder="مثال: #وظائف #تدريب">
+            </div>
+        </div>
+
+        <button class="btn-update" id="mainSubmitBtn" onclick="pushToFirebase()">إضافة ونشر البيانات <i class="fas fa-cloud-upload-alt"></i></button>
+        
+        <div class="course-list" id="adminList">
+            </div>
+            
+        <a href="#" class="logout-link" onclick="location.reload()"><i class="fas fa-power-off"></i> تسجيل الخروج</a>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+<script>
+    // 1. إعدادات Firebase الخاصة بمشروعك (medical-for-you)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCV9VgyvYcJBt18HKrCretAc8hZ_JR3Inw",
+        authDomain: "medical-for-you.firebaseapp.com",
+        // تم إضافة مسار قاعدة البيانات لضمان عمل Realtime Database
+        databaseURL: "https://medical-for-you-default-rtdb.firebaseio.com", 
+        projectId: "medical-for-you",
+        storageBucket: "medical-for-you.firebasestorage.app",
+        messagingSenderId: "588946718616",
+        appId: "1:588946718616:web:230d9bf91b96cbefaab5ed",
+        measurementId: "G-5RCFXF7ZH6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // 2. نظام تسجيل الدخول
+    const usersList = {
+        "admin": "12345",   
+        "alrasheed": "0960" // يمكنك تغييرها حسب رغبتك
+    };
+
+    function verifyAccess() {
+        const user = document.getElementById('userName').value;
+        const pass = document.getElementById('adminPass').value;
+        const errorMsg = document.getElementById('loginError');
+
+        if (user && usersList[user] === pass) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            changeSection(); // تفعيل القسم الافتراضي
+        } else {
+            errorMsg.style.display = 'block';
+            document.getElementById('adminPass').value = "";
+        }
+    }
+
+    // متغيرات لحفظ البيانات المجلوبة
+    window.currentDataMap = {};
+    let currentListener = null;
+
+    // 3. دالة تغيير القسم وإظهار/إخفاء الحقول المناسبة
+    function changeSection() {
+        const section = document.getElementById('sectionSelect').value;
+        
+        const descWrapper = document.getElementById('descWrapper');
+        const imgWrapper = document.getElementById('imgWrapper');
+        const extraWrapper = document.getElementById('extraWrapper');
+        
+        const lblTitle = document.getElementById('lblTitle');
+
+        // تنظيف الفورم
+        resetForm();
+
+        if (section === 'projects') {
+            lblTitle.innerText = "عنوان المشروع";
+            descWrapper.classList.remove('hidden-field');
+            imgWrapper.classList.remove('hidden-field');
+            extraWrapper.classList.add('hidden-field');
+        } 
+        else if (section === 'announcements') {
+            lblTitle.innerText = "عنوان الإعلان";
+            descWrapper.classList.remove('hidden-field');
+            imgWrapper.classList.remove('hidden-field');
+            extraWrapper.classList.remove('hidden-field');
+        } 
+        else if (section === 'news') {
+            lblTitle.innerText = "نص الخبر العاجل";
+            descWrapper.classList.add('hidden-field');
+            imgWrapper.classList.add('hidden-field');
+            extraWrapper.classList.add('hidden-field');
+        }
+
+        // تحميل بيانات القسم المختار
+        loadData(section);
+    }
+
+    // 4. دالة الإضافة / التحديث
+    function pushToFirebase() {
+        const section = document.getElementById('sectionSelect').value;
+        const title = document.getElementById('inputTitle').value;
+        const desc = document.getElementById('inputDesc').value;
+        const img = document.getElementById('inputImg').value;
+        const extra = document.getElementById('inputExtra').value;
+        let editKey = document.getElementById('editKey').value;
+
+        if (!title) {
+            alert("يرجى إدخال العنوان أو النص على الأقل!");
+            return;
+        }
+
+        // إذا كان عنصراً جديداً ولم نكن في وضع التعديل، نقوم بإنشاء مفتاح آمن
+        if (!editKey) {
+            // استخدام التوقيت كمفتاح لضمان عدم وجود مسافات أو رموز تسبب خطأ
+            editKey = "item_" + Date.now(); 
+        }
+
+        // إرسال البيانات لقاعدة البيانات
+        database.ref(section + '/' + editKey).set({
+            title: title,
+            desc: desc,
+            img: img,
+            extra: extra,
+            timestamp: new Date().toLocaleString('ar-EG')
+        }).then(() => {
+            alert("✅ تم الحفظ بنجاح!");
+            resetForm();
+        }).catch((error) => {
+            alert("حدث خطأ أثناء الحفظ: " + error.message);
+        });
+    }
+
+    // 5. دالة استرجاع البيانات (Live Listener)
+    function loadData(section) {
+        const list = document.getElementById('adminList');
+        
+        // إيقاف التنصت القديم إذا تم تغيير القسم
+        if (currentListener) {
+            database.ref(currentListener).off();
+        }
+        currentListener = section;
+
+        database.ref(section).on('value', (snapshot) => {
+            list.innerHTML = `<h4 style="color: var(--dark-blue);"><i class="fas fa-list"></i> العناصر المنشورة في (${getSectionName(section)}):</h4>`;
+            window.currentDataMap = {}; 
+            
+            if (!snapshot.exists()) {
+                list.innerHTML += `<p style="text-align: center; color: #888;">لا توجد بيانات مضافة بعد في هذا القسم.</p>`;
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const data = child.val();
+                window.currentDataMap[child.key] = data; 
+                
+                let badgeText = section === 'news' ? 'خبر عاجل' : (section === 'projects' ? 'مشروع' : 'إعلان');
+                let badgeColor = section === 'news' ? '#e74c3c' : (section === 'projects' ? '#3498db' : '#f39c12');
+
+                list.innerHTML += `
+                <div class="course-item">
+                    <div class="course-item-title">
+                        <span class="status-badge" style="background:${badgeColor}">${badgeText}</span>
+                        ${data.title}
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-edit" onclick="prepareEdit('${child.key}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteItem('${section}', '${child.key}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+        });
+    }
+
+    // 6. دالة الحذف
+    function deleteItem(section, key) {
+        if(confirm("هل أنت متأكد من الحذف النهائي؟")) {
+            database.ref(section + '/' + key).remove();
+        }
+    }
+
+    // 7. دالة تجهيز التعديل
+    function prepareEdit(key) {
+        const data = window.currentDataMap[key];
+        if(!data) return;
+        
+        document.getElementById('editKey').value = key;
+        document.getElementById('inputTitle').value = data.title || "";
+        document.getElementById('inputDesc').value = data.desc || "";
+        document.getElementById('inputImg').value = data.img || "";
+        document.getElementById('inputExtra').value = data.extra || "";
+        
+        // تغيير شكل الزر لتنبيهك بوضع التعديل
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerHTML = "حفظ التعديلات 💾";
+        btn.style.background = "linear-gradient(135deg, #f39c12, #e67e22)"; 
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 8. دالة إعادة تهيئة الفورم والزر
+    function resetForm() {
+        document.getElementById('editKey').value = "";
+        document.getElementById('inputTitle').value = "";
+        document.getElementById('inputDesc').value = "";
+        document.getElementById('inputImg').value = "";
+        document.getElementById('inputExtra').value = "";
+        
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerHTML = "إضافة ونشر البيانات <i class='fas fa-cloud-upload-alt'></i>";
+        btn.style.background = "linear-gradient(135deg, var(--main-color), #00c69a)";
+    }
+
+    // دالة مساعدة للحصول على اسم القسم بالعربي
+    function getSectionName(section) {
+        if(section === 'projects') return 'المشاريع';
+        if(section === 'announcements') return 'الإعلانات';
+        if(section === 'news') return 'الأخبار العاجلة';
+        return '';
+    }
+</script>
+</body>
+</html>

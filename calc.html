@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>الحاسبة التمريضية السريرية | شبكة الممرضين السودانيين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* التنسيقات الجوهرية لضمان استقرار الحاسبة كما هي */
+        :root { --main-color: #00a884; --dark-blue: #1e272e; }
+        
+        body { background-color: #f4f7f6; font-family: 'Cairo', sans-serif; margin: 0; padding-bottom: 90px; }
+
+        .calc-header { 
+            background: #1e272e; color: white; padding: 50px 20px; 
+            text-align: center; border-radius: 0 0 40px 40px; 
+            border-bottom: 5px solid var(--main-color); 
+        }
+        .calc-header h1 { margin: 0 0 10px 0; font-size: 2.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: 900; }
+        .calc-header p { margin: 0; font-size: 1.1rem; opacity: 0.9; font-weight: bold; }
+
+        /* الهيدر والقائمة العلوية */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(255, 255, 255, 0.95); box-shadow: 0 4px 20px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
+        .logo { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 900; color: var(--dark-blue); text-decoration: none; }
+        .logo i { color: var(--main-color); font-size: 1.6rem; }
+        .logo span { color: var(--main-color); }
+        .nav-links { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; align-items: center; }
+        .nav-links li a { color: var(--dark-blue); font-weight: 700; display: flex; align-items: center; gap: 6px; font-size: 1.05rem; text-decoration: none; transition: 0.3s; }
+        .nav-links li a:hover { color: var(--main-color); }
+
+        .container { max-width: 1100px; margin: auto; padding: 20px; }
+
+        .calc-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 25px; margin-top: -30px; 
+        }
+        
+        .calc-card {
+            background: white; border-radius: 20px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid var(--main-color);
+            position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column;
+        }
+        .calc-card:hover { transform: translateY(-8px); }
+
+        .calc-card h3 { 
+            color: var(--dark-blue); margin: 0 0 20px 0; 
+            display: flex; align-items: center; gap: 12px; 
+            border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; 
+            font-size: 1.3rem; font-weight: 900;
+        }
+        .calc-card h3 i { color: var(--main-color); font-size: 1.5rem; }
+        
+        .form-group { margin-bottom: 15px; text-align: right; }
+        .form-group label { display: block; font-weight: bold; color: #555; margin-bottom: 8px; font-size: 0.95rem; }
+        
+        .calc-input, .calc-select {
+            width: 100%; padding: 14px; border: 2px solid #edf2f1; border-radius: 12px;
+            font-family: 'Cairo'; font-size: 1.05rem; transition: 0.3s; box-sizing: border-box;
+            background: #fafafa; font-weight: bold;
+        }
+        .calc-input:focus, .calc-select:focus { border-color: var(--main-color); outline: none; background: white; box-shadow: 0 0 0 4px rgba(0,168,132,0.1); }
+        
+        .btn-calc {
+            width: 100%; background: var(--main-color); color: white; border: none;
+            padding: 16px; border-radius: 12px; font-weight: 900; font-size: 1.2rem;
+            cursor: pointer; transition: 0.3s; margin-top: auto; font-family: 'Cairo';
+        }
+        .btn-calc:hover { background: #008e6f; box-shadow: 0 8px 20px rgba(0,168,132,0.3); transform: translateY(-2px); }
+        
+        .result-box {
+            background: #e8f6f3; color: #008e6f; padding: 20px; border-radius: 12px;
+            margin-top: 20px; text-align: center; font-weight: bold; font-size: 1.1rem;
+            display: none; border: 2px dashed #008e6f; line-height: 1.6;
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes bounceIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .result-box.danger { background: #fadbd8; color: #c0392b; border-color: #c0392b; }
+        .result-box.warning { background: #fcf3cf; color: #d35400; border-color: #f39c12; }
+
+        /* ========================================= */
+        /* التنسيقات المضافة لزر ونافذة المبرمج */
+        /* ========================================= */
+        .nav-dev-btn { 
+            background: rgba(0, 168, 132, 0.1); 
+            color: var(--main-color) !important; 
+            border: 1px solid var(--main-color); 
+            padding: 6px 15px !important; 
+            border-radius: 10px; 
+            margin-right: 10px; 
+            font-weight: 900; 
+            transition: 0.3s; 
+            cursor: pointer; 
+            display: inline-flex; 
+            align-items: center; 
+        }
+        .nav-dev-btn:hover { 
+            background: var(--main-color); 
+            color: white !important; 
+            box-shadow: 0 4px 15px rgba(0,168,132,0.4); 
+            transform: translateY(-2px); 
+        }
+
+        .copyright-btn { 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: #fff; 
+            padding: 10px 25px; 
+            border-radius: 30px; 
+            cursor: pointer; 
+            font-family: 'Cairo'; 
+            font-size: 1rem; 
+            margin-top: 15px; 
+            transition: 0.3s; 
+            font-weight: bold; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .copyright-btn:hover { 
+            background: var(--main-color); 
+            border-color: var(--main-color); 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(0,168,132,0.4); 
+        }
+
+        .dev-modal { display: none; position: fixed; z-index: 999999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s ease; }
+        .dev-modal.show-modal { display: flex; opacity: 1; justify-content: center; align-items: center; }
+        .dev-content { background: white; width: 90%; max-width: 420px; padding: 40px 30px; border-radius: 25px; text-align: center; position: relative; border-bottom: 8px solid var(--main-color); color: #333; box-shadow: 0 25px 50px rgba(0,0,0,0.4); transform: translateY(-50px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .dev-modal.show-modal .dev-content { transform: translateY(0); opacity: 1; }
+        .dev-img { width: 140px; height: 140px; border-radius: 50%; border: 5px solid var(--main-color); margin-bottom: 20px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,168,132,0.4); padding: 4px; background: white; }
+        .close-dev { position: absolute; left: 25px; top: 20px; font-size: 30px; cursor: pointer; color: #aaa; transition: 0.3s; line-height: 1; }
+        .close-dev:hover { color: #e74c3c; transform: rotate(90deg) scale(1.2); }
+        .dev-contact-info { text-align: right; margin-top: 25px; background: #f4fdfa; padding: 25px; border-radius: 15px; border: 2px dashed var(--main-color); }
+        .dev-contact-info p { margin: 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 15px; font-weight: bold; }
+        .dev-contact-info a { color: var(--dark-blue); text-decoration: none; transition: 0.3s; }
+        .dev-contact-info a:hover { color: var(--main-color); padding-right: 5px; }
+        .dev-contact-info i { color: var(--main-color); width: 25px; font-size: 1.3rem; text-align: center; }
+
+        /* ========================================= */
+        /* القائمة السريعة المطورة */
+        /* ========================================= */
+        .quick-access-btn { 
+            position: fixed; bottom: 30px; right: 30px; 
+            background: linear-gradient(135deg, var(--main-color), #00c69a); color: white; width: 65px; height: 65px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 1.8rem; cursor: pointer; z-index: 100000; box-shadow: 0 10px 20px rgba(0,168,132,0.4); 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .quick-access-btn:hover, .quick-access-btn.active-btn { transform: scale(1.1) rotate(90deg); background: var(--dark-blue); }
+
+        .quick-menu { 
+            position: fixed; bottom: 110px; right: 30px; background: rgba(255,255,255,0.98); 
+            backdrop-filter: blur(15px); width: 280px; max-height: 75vh; border-radius: 20px; 
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 99999; overflow-y: auto; 
+            border: 1px solid rgba(255,255,255,0.5);
+            display: block !important; 
+            visibility: hidden; opacity: 0; pointer-events: none; 
+            transform: translateY(20px) scale(0.9); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        .quick-menu.active { 
+            visibility: visible !important; 
+            opacity: 1 !important; 
+            transform: translateY(0) scale(1) !important; 
+            pointer-events: auto !important; 
+        }
+        
+        .quick-menu::-webkit-scrollbar { width: 5px; }
+        .quick-menu::-webkit-scrollbar-track { background: #f4f7f6; border-radius: 10px; }
+        .quick-menu::-webkit-scrollbar-thumb { background: var(--main-color); border-radius: 10px; }
+        .quick-menu::-webkit-scrollbar-thumb:hover { background: var(--dark-blue); }
+        
+        .quick-menu ul { list-style: none; padding: 10px 0; margin: 0; }
+        .quick-menu li { border-bottom: 1px solid #eee; }
+        .quick-menu li a { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: var(--dark-blue); font-weight: 800; text-decoration: none; transition: 0.3s; }
+        .quick-menu li a:hover { background: var(--light-bg); color: var(--main-color); padding-right: 35px; }
+        .quick-menu li a i { width: 25px; text-align: center; color: var(--main-color); font-size: 1.3rem; transition: 0.3s; }
+        .quick-menu li a:hover i { transform: scale(1.2); }
+        
+        footer { background: #1e272e; color: #999; text-align: center; padding: 30px; margin-top: 50px; font-weight: bold; border-top: 5px solid var(--main-color); }
+
+        /* ========================================= */
+        /* التحديثات الجمالية الجديدة (الوميض واللمس) */
+        /* ========================================= */
+
+        /* 1. تأثير الانضغاط عند اللمس للهواتف */
+        .btn-calc:active, .calc-card:active, .quick-access-btn:active {
+            transform: scale(0.96) !important;
+            transition: transform 0.1s ease;
+        }
+
+        /* 2. تأثير الوميض (اللمعان) والنبض لأزرار الحساب */
+        .btn-calc {
+            position: relative;
+            overflow: hidden;
+            animation: buttonPulse 2s infinite alternate;
+        }
+        .btn-calc::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); animation: shine 3.5s infinite;
+        }
+        @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+        
+        /* ضبط النبض ليطابق لون الزر (أخضر، أزرق، أحمر) */
+        .calc-card:nth-child(1) .btn-calc { animation-name: pulseGreen; }
+        .calc-card:nth-child(2) .btn-calc { animation-name: pulseBlue; }
+        .calc-card:nth-child(3) .btn-calc { animation-name: pulseRed; }
+        
+        @keyframes pulseGreen { 0% { box-shadow: 0 5px 15px rgba(0, 168, 132, 0.4); } 100% { box-shadow: 0 8px 25px rgba(0, 168, 132, 0.8); } }
+        @keyframes pulseBlue { 0% { box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); } 100% { box-shadow: 0 8px 25px rgba(52, 152, 219, 0.8); } }
+        @keyframes pulseRed { 0% { box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); } 100% { box-shadow: 0 8px 25px rgba(231, 76, 60, 0.8); } }
+
+        /* 3. توهج ذكي للبطاقات عند التمرير حسب التخصص (أخضر، أزرق، أحمر) */
+        .calc-card:nth-child(1):hover { box-shadow: 0 15px 35px rgba(0, 168, 132, 0.2) !important; }
+        .calc-card:nth-child(2):hover { box-shadow: 0 15px 35px rgba(52, 152, 219, 0.2) !important; }
+        .calc-card:nth-child(3):hover { box-shadow: 0 15px 35px rgba(231, 76, 60, 0.2) !important; }
+
+        /* 4. ديناميكية خلفية الهيدر */
+        .calc-header {
+            background: linear-gradient(-45deg, #1e272e, #2c3e50, #1a252f, #11181e) !important;
+            background-size: 300% 300% !important;
+            animation: gradientBG 15s ease infinite !important;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 15px; padding: 10px; }
+            .nav-links { display: flex; flex-wrap: nowrap; overflow-x: auto; width: 100%; justify-content: flex-start; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+            .nav-links::-webkit-scrollbar { display: none; }
+            .nav-links li { flex: 0 0 auto; }
+            .nav-links li a { font-size: 0.9rem; padding: 5px 10px; }
+            
+            .calc-header { padding: 40px 15px; border-radius: 0 0 30px 30px; }
+            .calc-header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-heart-pulse"></i> شبكة الممرضين <span>السودانيين</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="calc.html" style="color: var(--main-color); font-weight: bold;"><i class="fas fa-calculator"></i> الحاسبة السريرية</a></li>
+            <li><a href="drugs.html"><i class="fas fa-pills"></i> الأدوية</a></li>
+            <li><a href="sos.html"><i class="fas fa-ambulance"></i> الاستغاثة</a></li>
+            <li><a href="consult.html"><i class="fas fa-comments"></i> الاستشارات</a></li>
+            <li><button class="nav-dev-btn" onclick="openDevModal(event)"><i class="fas fa-code"></i> المبرمج</button></li>
+        </ul>
+    </nav>
+
+    <header class="calc-header">
+        <h1><i class="fas fa-laptop-medical"></i> الحاسبة التمريضية الذكية</h1>
+        <p>أدوات حسابية سريعة ودقيقة لمساعدتك في اتخاذ القرار أثناء الوردية.</p>
+    </header>
+
+    <section class="section">
+        <div class="container">
+            <div class="calc-grid">
+                
+                <div class="calc-card">
+                    <h3><i class="fas fa-tint"></i> معدل التنقيط الوريدي (IV Drip)</h3>
+                    <div class="form-group">
+                        <label>حجم المحلول (مل - ml)</label>
+                        <input type="number" id="ivVolume" class="calc-input" placeholder="مثال: 500">
+                    </div>
+                    <div class="form-group">
+                        <label>الزمن (بالساعات)</label>
+                        <input type="number" id="ivTime" class="calc-input" placeholder="مثال: 8">
+                    </div>
+                    <div class="form-group">
+                        <label>معامل التنقيط (Drop Factor)</label>
+                        <select id="ivFactor" class="calc-select">
+                            <option value="15">جهاز عادي (15 قطرة/مل)</option>
+                            <option value="20">جهاز عادي (20 قطرة/مل)</option>
+                            <option value="60">جهاز أطفال (60 قطرة/مل - Micro)</option>
+                        </select>
+                    </div>
+                    <button class="btn-calc" onclick="calculateIV()">احسب المعدل</button>
+                    <div id="ivResult" class="result-box"></div>
+                </div>
+
+                <div class="calc-card" style="border-top-color: #3498db;">
+                    <h3 style="color: #2980b9;"><i class="fas fa-child"></i> جرعات الأطفال بالوزن</h3>
+                    <div class="form-group">
+                        <label>وزن الطفل (كجم - kg)</label>
+                        <input type="number" id="pedWeight" class="calc-input" placeholder="مثال: 12">
+                    </div>
+                    <div class="form-group">
+                        <label>الجرعة المطلوبة (ملجم لكل كجم - mg/kg)</label>
+                        <input type="number" id="pedDosePerKg" class="calc-input" placeholder="مثال: 15 (للباراسيتامول)">
+                    </div>
+                    <button class="btn-calc" style="background: #3498db;" onclick="calculatePedDose()">احسب الجرعة</button>
+                    <div id="pedResult" class="result-box" style="color: #2980b9; border-color: #3498db; background: #ebf5fb;"></div>
+                </div>
+
+                <div class="calc-card" style="border-top-color: #e74c3c;">
+                    <h3 style="color: #c0392b;"><i class="fas fa-brain"></i> مقياس جلاسكو للغيبوبة (GCS)</h3>
+                    
+                    <div class="form-group">
+                        <label>فتح العينين (Eye Opening)</label>
+                        <select id="gcsEye" class="calc-select">
+                            <option value="4">تلقائي (4)</option>
+                            <option value="3">استجابة للصوت (3)</option>
+                            <option value="2">استجابة للألم (2)</option>
+                            <option value="1">لا توجد استجابة (1)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>الاستجابة اللفظية (Verbal)</label>
+                        <select id="gcsVerbal" class="calc-select">
+                            <option value="5">واعي وموجه (5)</option>
+                            <option value="4">مشوش (4)</option>
+                            <option value="3">كلمات غير مناسبة (3)</option>
+                            <option value="2">أصوات غير مفهومة (2)</option>
+                            <option value="1">لا توجد استجابة (1)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>الاستجابة الحركية (Motor)</label>
+                        <select id="gcsMotor" class="calc-select">
+                            <option value="6">يطيع الأوامر (6)</option>
+                            <option value="5">يحدد مكان الألم (5)</option>
+                            <option value="4">يسحب طرفه من الألم (4)</option>
+                            <option value="3">انثناء غير طبيعي (3)</option>
+                            <option value="2">انبساط غير طبيعي (2)</option>
+                            <option value="1">لا توجد استجابة (1)</option>
+                        </select>
+                    </div>
+                    <button class="btn-calc" style="background: #e74c3c;" onclick="calculateGCS()">احسب مستوى الوعي</button>
+                    <div id="gcsResult" class="result-box"></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <div class="quick-access-btn" id="quickToggleBtn" title="كل الشاشات">
+        <i class="fas fa-th-large" style="pointer-events: none;"></i>
+    </div>
+
+    <div id="quickMenu" class="quick-menu">
+        <ul>
+             <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+            <li><a href="research.html"><i class="fas fa-book-medical"></i> مكتبة الأبحاث</a></li>
+            <li><a href="jobs.html"><i class="fas fa-user-md"></i> فرص العمل</a></li>
+            <li><a href="training.html"><i class="fas fa-users"></i> التدريب المستمر</a></li>
+            <li><a href="consult.html"><i class="fas fa-comments"></i> ركن الاستشارات</a></li>
+            <li><a href="join.html"><i class="fas fa-user-plus"></i> انضم إلينا (عضوية)</a></li>
+            <li><a href="calc.html"><i class="fas fa-calculator"></i> الحاسبة السريرية</a></li>
+    <li><a href="snn-jobs.html" style="color: var(--main-color); background: rgba(0,168,132,0.05);"><i class="fas fa-briefcase"></i> بوابة توظيف الشبكة</a></li>
+            <li><a href="activities.html"><i class="fas fa-heartbeat"></i> نبض الميدان (النشاطات)</a></li>
+            <li><a href="archive.html"><i class="fas fa-book-medical"></i> أرشيف الأبحاث</a></li>
+            <li><a href="upload-research.html"><i class="fas fa-cloud-upload-alt"></i> شارك بحثك العلمي</a></li>
+        </ul>
+    </div>
+
+    <div id="devModal" class="dev-modal">
+        <div class="dev-content">
+            <span class="close-dev" id="closeDevBtn">&times;</span>
+            
+            <img src="me.jpeg" alt="المبرمج الرشيد كمال" class="dev-img" onerror="this.src='https://via.placeholder.com/150?text=Al-Rasheed'">
+            
+            <h3 style="color: var(--dark-blue); margin-bottom: 5px; font-weight: 900; font-size: 1.6rem;">تطوير المبرمج: الرشيد كمال</h3>
+            <p style="color: #666; font-size: 1.1rem; font-weight: bold;">متخصص في حلول الويب والأنظمة الصحية</p>
+            
+            <div class="dev-contact-info">
+                <p><i class="fas fa-phone-alt"></i> <a href="tel:0127825456">0127825456</a></p>
+                <p><i class="fas fa-phone-alt"></i> <a href="tel:0964278052">0964278052</a></p>
+                <p><i class="fas fa-envelope"></i> <a href="mailto:alrsheedkamal6002@gmail.com">alrsheedkamal6002@gmail.com</a></p>
+            </div>
+
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
+            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--main-color);">Al-Rasheed Company © 2026</p>
+            <p style="font-size: 0.9rem; color: #888; font-weight: bold;">صنع بكل فخر لدعم الكوادر الصحية السودانية</p>
+        </div>
+    </div>
+
+    <footer>
+        <p style="margin-bottom: 15px;">جميع الحقوق محفوظة &copy; 2026 - شبكة الممرضين السودانيين</p>
+        <button class="copyright-btn" onclick="openDevModal(event)">
+            <i class="fas fa-code"></i> حقوق البرمجة والتطوير
+        </button>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCV9VgyvYcJBt18HKrCretAc8hZ_JR3Inw",
+            authDomain: "medical-for-you.firebaseapp.com",
+            projectId: "medical-for-you",
+            storageBucket: "medical-for-you.firebasestorage.app",
+            messagingSenderId: "588946718616",
+            appId: "1:588946718616:web:230d9bf91b96cbefaab5ed",
+            measurementId: "G-5RCFXF7ZH6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
+
+    <script src="script.js"></script>
+    <script>
+        // 1. حساب التنقيط الوريدي
+        function calculateIV() {
+            let vol = parseFloat(document.getElementById('ivVolume').value);
+            let timeHours = parseFloat(document.getElementById('ivTime').value);
+            let factor = parseFloat(document.getElementById('ivFactor').value);
+            let resultBox = document.getElementById('ivResult');
+
+            if(!vol || !timeHours) {
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = "يرجى إدخال الحجم والزمن بشكل صحيح.";
+                resultBox.className = "result-box danger";
+                return;
+            }
+
+            let timeMins = timeHours * 60;
+            let dropsPerMin = Math.round((vol * factor) / timeMins);
+            
+            resultBox.style.display = 'block';
+            resultBox.className = "result-box";
+            resultBox.innerHTML = `المعدل المطلوب:<br><span style="font-size:1.8rem;">${dropsPerMin}</span> قطرة / دقيقة`;
+        }
+
+        // 2. حساب جرعة الأطفال
+        function calculatePedDose() {
+            let weight = parseFloat(document.getElementById('pedWeight').value);
+            let dosePkg = parseFloat(document.getElementById('pedDosePerKg').value);
+            let resultBox = document.getElementById('pedResult');
+
+            if(!weight || !dosePkg) {
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = "يرجى إدخال الوزن والجرعة المطلوبة.";
+                resultBox.className = "result-box danger";
+                return;
+            }
+
+            let totalDose = (weight * dosePkg).toFixed(1);
+            
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = `إجمالي الجرعة المطلوبة:<br><span style="font-size:1.8rem;">${totalDose}</span> ملجم (mg)`;
+        }
+
+        // 3. مقياس جلاسكو (GCS)
+        function calculateGCS() {
+            let eye = parseInt(document.getElementById('gcsEye').value);
+            let verbal = parseInt(document.getElementById('gcsVerbal').value);
+            let motor = parseInt(document.getElementById('gcsMotor').value);
+            let resultBox = document.getElementById('gcsResult');
+
+            let total = eye + verbal + motor;
+            let status = "";
+            let statusClass = "result-box";
+
+            if (total <= 8) {
+                status = "غيبوبة شديدة (يحتاج تنبيب غالباً)";
+                statusClass += " danger";
+            } else if (total >= 9 && total <= 12) {
+                status = "إصابة متوسطة";
+                statusClass += " warning";
+            } else {
+                status = "إصابة خفيفة / وعي طبيعي";
+            }
+            
+            resultBox.style.display = 'block';
+            resultBox.className = statusClass;
+            resultBox.innerHTML = `النتيجة (GCS): <span style="font-size:1.8rem; font-weight:900;">${total}/15</span><br><small style="font-size:1.1rem;">${status}</small>`;
+        }
+
+        // ========================================================
+        // سكريبت القائمة السريعة ونافذة المبرمج (الجديد والمطور)
+        // ========================================================
+        const quickMenu = document.getElementById('quickMenu');
+        const quickToggleBtn = document.getElementById('quickToggleBtn');
+
+        if (quickToggleBtn && quickMenu) {
+            quickToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // منع انتقال النقرة لإغلاقها فوراً
+                quickMenu.classList.toggle('active');
+                quickToggleBtn.classList.toggle('active-btn');
+            });
+        }
+
+        // مستمع نقرات عام لإغلاق النوافذ عند النقر خارجها
+        document.addEventListener('click', function(e) {
+            // إغلاق القائمة السريعة
+            if (quickMenu && quickToggleBtn) {
+                if (!quickMenu.contains(e.target) && !quickToggleBtn.contains(e.target)) {
+                    quickMenu.classList.remove('active');
+                    quickToggleBtn.classList.remove('active-btn');
+                }
+            }
+            
+            // إغلاق نافذة المبرمج
+            const devModal = document.getElementById('devModal');
+            if (devModal && e.target === devModal) {
+                devModal.classList.remove('show-modal');
+            }
+        });
+
+        // دوال فتح وإغلاق نافذة المبرمج
+        function openDevModal(e) { 
+            if(e) { e.preventDefault(); e.stopPropagation(); }
+            document.getElementById('devModal').classList.add('show-modal'); 
+        }
+        
+        const closeDevBtn = document.getElementById('closeDevBtn');
+        if (closeDevBtn) {
+            closeDevBtn.addEventListener('click', function() {
+                document.getElementById('devModal').classList.remove('show-modal');
+            });
+        }
+
+        // دالة التوافق مع الكود القديم إن استدعت الحاجة
+        function toggleQuickMenu() {
+            if(quickMenu) quickMenu.classList.toggle('active');
+            if(quickToggleBtn) quickToggleBtn.classList.toggle('active-btn');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة لوحة الشرف | شبكة الممرضين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --main-color: #00a884; 
+            --dark-blue: #1e272e;
+            --bg-color: #f4f7f6;
+            --gold-color: #f1c40f;
+        }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); padding: 20px; direction: rtl; margin: 0; }
+        
+        .admin-card { background: white; max-width: 750px; margin: 0 auto; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 8px solid var(--gold-color); }
+        h2 { color: var(--dark-blue); text-align: center; margin-bottom: 25px; font-weight: 900; }
+        
+        .form-section { background: #fdfdfd; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #475569; font-size: 1.1rem; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; box-sizing: border-box; font-size: 1rem; transition: 0.3s; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold-color); outline: none; background: white; box-shadow: 0 0 0 4px rgba(241,196,15,0.1); }
+        
+        .btn-update { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--gold-color), #f39c12); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-update:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(241,196,15,0.4); }
+        
+        .course-list { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+        .course-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s; }
+        .course-item:hover { border-color: var(--gold-color); transform: translateY(-2px); }
+        
+        #loginSection { max-width: 420px; margin: 80px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid var(--gold-color); }
+        #adminPanel { display: none; }
+        .logout-link { display: block; text-align: center; margin-top: 25px; color: #ef4444; cursor: pointer; font-weight: bold; text-decoration: none; transition: 0.3s; font-size: 1.1rem; }
+        
+        .action-btns { display: flex; gap: 8px; }
+        .action-btns button { padding: 8px 12px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; color: white; }
+        .btn-edit { background: #3498db; }
+        .btn-delete { background: #e74c3c; }
+
+        .row { display: flex; gap: 15px; }
+        .row > div { flex: 1; }
+        @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+    </style>
+</head>
+<body>
+
+<div id="loginSection">
+    <i class="fas fa-star" style="font-size: 4rem; color: var(--gold-color); margin-bottom: 15px;"></i>
+    <h2>إدارة لوحة الشرف</h2>
+    <p style="color: #64748b; margin-bottom: 25px; font-weight: bold;">تسجيل الدخول لتكريم الباحثين المتميزين</p>
+    
+    <select id="userName" style="width: 100%; padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; margin-bottom: 15px;">
+        <option value="">-- اختر المستخدم --</option>
+        <option value="admin">مدير النظام</option>
+        <option value="alrasheed">الممرض الرشيد</option>
+    </select>
+
+    <input type="password" id="adminPass" placeholder="كلمة المرور" style="font-weight: bold; text-align: center;">
+    <button class="btn-update" onclick="verifyAccess()">دخول آمن <i class="fas fa-sign-in-alt"></i></button>
+    <p id="loginError" style="color: #e74c3c; display: none; margin-top: 15px; font-weight: bold;">بيانات الدخول غير صحيحة!</p>
+</div>
+
+<div id="adminPanel">
+    <div class="admin-card">
+        <h2><i class="fas fa-award" style="color: var(--gold-color);"></i> إضافة باحث إلى لوحة الشرف</h2>
+        
+        <div class="form-section" id="dataForm">
+            <input type="hidden" id="editKey">
+
+            <div class="row">
+                <div>
+                    <label>اسم الباحث المتميز</label>
+                    <input type="text" id="researcherName" placeholder="مثال: أ. أحمد حسن">
+                </div>
+                <div>
+                    <label>لقب التكريم</label>
+                    <input type="text" id="badgeTitle" placeholder="مثال: باحث الشهر">
+                </div>
+            </div>
+
+            <label>رابط صورة الباحث (اختياري)</label>
+            <input type="text" id="researcherImage" placeholder="مثال: https://example.com/image.jpg (إذا تُرك فارغاً سيتم توليد صورة ذكية)">
+
+            <div class="row">
+                <div>
+                    <label>أيقونة الوسام (FontAwesome)</label>
+                    <select id="badgeIcon">
+                        <option value="fa-medal">ميدالية (fa-medal)</option>
+                        <option value="fa-trophy">كأس (fa-trophy)</option>
+                        <option value="fa-star">نجمة (fa-star)</option>
+                        <option value="fa-award">وسام (fa-award)</option>
+                        <option value="fa-certificate">شهادة (fa-certificate)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>اللون المميز للتكريم</label>
+                    <input type="color" id="badgeColor" value="#00a884" style="padding: 5px; cursor: pointer; height: 50px;">
+                </div>
+            </div>
+
+            <label>سبب التكريم (وصف الإنجاز)</label>
+            <textarea id="honorReason" rows="3" placeholder="مثال: صاحب الورقة البحثية الأكثر تحميلاً في مجال إدارة الطوارئ..."></textarea>
+        </div>
+
+        <button class="btn-update" id="mainSubmitBtn" onclick="pushToFirebase()">تكريم ونشر في لوحة الشرف <i class="fas fa-crown"></i></button>
+        
+        <div class="course-list" id="adminList">
+            <h4 style="color: var(--dark-blue);"><i class="fas fa-list"></i> المكرمون حالياً في لوحة الشرف:</h4>
+            <div id="listContent"></div>
+        </div>
+            
+        <a href="#" class="logout-link" onclick="location.reload()"><i class="fas fa-power-off"></i> تسجيل الخروج</a>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCV9VgyvYcJBt18HKrCretAc8hZ_JR3Inw",
+        authDomain: "medical-for-you.firebaseapp.com",
+        databaseURL: "https://medical-for-you-default-rtdb.firebaseio.com", 
+        projectId: "medical-for-you",
+        storageBucket: "medical-for-you.firebasestorage.app",
+        messagingSenderId: "588946718616",
+        appId: "1:588946718616:web:230d9bf91b96cbefaab5ed"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const usersList = { "admin": "12345", "alrasheed": "0960" };
+
+    function verifyAccess() {
+        const user = document.getElementById('userName').value;
+        const pass = document.getElementById('adminPass').value;
+        if (user && usersList[user] === pass) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadData();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('adminPass').value = "";
+        }
+    }
+
+    window.currentDataMap = {};
+
+    function pushToFirebase() {
+        const name = document.getElementById('researcherName').value;
+        const title = document.getElementById('badgeTitle').value;
+        const image = document.getElementById('researcherImage').value; // جلب الصورة
+        const icon = document.getElementById('badgeIcon').value;
+        const color = document.getElementById('badgeColor').value;
+        const reason = document.getElementById('honorReason').value;
+        
+        let editKey = document.getElementById('editKey').value;
+
+        if (!name || !title || !reason) {
+            alert("يرجى ملء جميع بيانات التكريم الأساسية!");
+            return;
+        }
+
+        if (!editKey) editKey = "honor_" + Date.now(); 
+
+        const btn = document.getElementById('mainSubmitBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "جاري الحفظ... <i class='fas fa-spinner fa-spin'></i>";
+        btn.disabled = true;
+
+        database.ref('honor_board/' + editKey).set({
+            name: name,
+            title: title,
+            image: image, // حفظ الصورة
+            icon: icon,
+            color: color,
+            reason: reason,
+            timestamp: new Date().toLocaleString('ar-EG')
+        }).then(() => {
+            alert("✅ تم إضافة الباحث إلى لوحة الشرف بنجاح!");
+            resetForm();
+        }).catch((error) => alert("خطأ: " + error.message))
+          .finally(() => { btn.innerHTML = originalText; btn.disabled = false; });
+    }
+
+    function loadData() {
+        database.ref('honor_board').on('value', (snapshot) => {
+            const list = document.getElementById('listContent');
+            list.innerHTML = '';
+            window.currentDataMap = {}; 
+            
+            if (!snapshot.exists()) {
+                list.innerHTML = `<p style="text-align: center; color: #888;">لوحة الشرف فارغة حالياً.</p>`;
+                return;
+            }
+
+            const dataArray = [];
+            snapshot.forEach(child => { dataArray.push({ key: child.key, val: child.val() }); });
+            dataArray.reverse();
+
+            dataArray.forEach(item => {
+                const data = item.val;
+                window.currentDataMap[item.key] = data; 
+                list.innerHTML += `
+                <div class="course-item" style="border-right: 5px solid ${data.color}">
+                    <div class="course-item-title">
+                        <span style="display:block; font-size:1.1rem; margin-bottom:5px;">${data.name}</span>
+                        <span style="color:${data.color}; font-size:0.9rem; font-weight:900;"><i class="fas ${data.icon}"></i> ${data.title}</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-edit" onclick="prepareEdit('${item.key}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteItem('${item.key}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+        });
+    }
+
+    function deleteItem(key) {
+        if(confirm("هل أنت متأكد من إزالة هذا الباحث من لوحة الشرف؟")) {
+            database.ref('honor_board/' + key).remove();
+        }
+    }
+
+    function prepareEdit(key) {
+        const data = window.currentDataMap[key];
+        if(!data) return;
+        
+        document.getElementById('editKey').value = key;
+        document.getElementById('researcherName').value = data.name || "";
+        document.getElementById('badgeTitle').value = data.title || "";
+        document.getElementById('researcherImage').value = data.image || ""; // تعبئة الصورة للتعديل
+        document.getElementById('badgeIcon').value = data.icon || "fa-medal";
+        document.getElementById('badgeColor').value = data.color || "#00a884";
+        document.getElementById('honorReason').value = data.reason || "";
+        
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerHTML = "حفظ التعديلات 💾";
+        btn.style.background = "linear-gradient(135deg, #3498db, #2980b9)"; 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('editKey').value = "";
+        document.getElementById('researcherName').value = "";
+        document.getElementById('badgeTitle').value = "";
+        document.getElementById('researcherImage').value = ""; // تصفير الصورة
+        document.getElementById('badgeIcon').value = "fa-medal";
+        document.getElementById('badgeColor').value = "#00a884";
+        document.getElementById('honorReason').value = "";
+        
+        const btn = document.getElementById('mainSubmitBtn');
+        btn.innerHTML = "تكريم ونشر في لوحة الشرف <i class='fas fa-crown'></i>";
+        btn.style.background = "linear-gradient(135deg, var(--gold-color), #f39c12)";
+    }
+</script>
+</body>
+</html>
