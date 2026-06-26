@@ -444,15 +444,15 @@
                 <h3> من نحن</h3>
                 <p>هل تحتاج لممرض في المنزل؟ أرسل نداءك وسيصلك أقرب ممرض متطوع.</p>
             </a>
-            <a href="hospitals.html" class="service-card blue-card fade-element">
+            <a href="archive.html" class="service-card blue-card fade-element">
                 <div class="icon-box blue-icon"><i class="fas fa-hospital-alt"></i></div>
-                <h3>دليل المستشفيات</h3>
-                <p>حالة المستشفيات، الفحوصات المتاحة، ونظام تحويل المرضى الإلكتروني.</p>
+                <h3>مكتبة الابحاث </h3>
+                <p>تصفح أكبر قاعدة بيانات للأبحاث التمريضية والإحصائية في السودان .</p>
             </a>
-            <a href="handover.html" class="service-card purple-card fade-element">
+            <a href="snn-jobs.html" class="service-card purple-card fade-element">
                 <div class="icon-box purple-icon"><i class="fas fa-exchange-alt"></i></div>
-                <h3>تسليم الورديات (SBAR)</h3>
-                <p>نظام إلكتروني ذكي لتسليم وتسلم الورديات وتوثيق حالة المرضى.</p>
+                <h3>توظيف داخل الشبكة (SBAR)</h3>
+                <p>بوابة التوظيف الخاصة بشبكة الممرضيين السودانيين  .</p>
             </a>
             <a href="calc.html" class="service-card orange-card fade-element">
                 <div class="icon-box orange-icon"><i class="fas fa-calculator"></i></div>
@@ -807,13 +807,13 @@
 
             setTimeout(() => {
                 toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
+                setTimeout(() => toast.remove(), 1000);
             }, 4000);
         }
 
         setTimeout(() => { createToast("مرحباً بك! لا تنسَ مراجعة دورة الـ CPR الجديدة."); }, 3000);
         setTimeout(() => { createToast("تم تحديث مكتبة الأبحاث اليوم، تصفحها الآن!"); }, 8000);
-
+           setTimeout(() => { createToast("سيتم الاعلان عن وظيفة داخل مكاتب شبكة الممرضين السودانيين يوم 27 - 6 - 2026!"); }, 14000);
         // 7. معالجة سكريبت فورم التواصل (Formspree)
         const contactForm = document.getElementById('contactForm');
         if (contactForm) {
