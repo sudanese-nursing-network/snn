@@ -327,6 +327,49 @@
             .quick-access-btn { bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px; }
             .quick-menu { bottom: 90px; right: 20px; width: calc(100vw - 40px); }
             .dev-content { width: 95% !important; margin: 10% auto !important; padding: 20px !important; }
+
+            /* ========================================= */
+            /* التعديلات الجذرية لشاشة الجوال (بطاقتين في الصف) */
+            /* ========================================= */
+            
+            #services .grid {
+                /* إجبار الشبكة على عرض عمودين في الهواتف */
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px; /* تقليل المسافة بين البطاقات */
+            }
+
+            .service-card {
+                padding: 15px 10px; /* تقليل الحواف الداخلية لضمان مساحة للنص */
+                min-height: 170px; /* توحيد ارتفاع البطاقات */
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+
+            .service-card .icon-box {
+                width: 50px; /* تصغير الأيقونة */
+                height: 50px;
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+
+            .service-card h3 {
+                font-size: 1rem; /* تصغير عنوان الخدمة */
+                margin-bottom: 5px;
+                line-height: 1.3;
+            }
+
+            .service-card p {
+                font-size: 0.75rem; /* تصغير الوصف لمنع التداخل */
+                line-height: 1.4;
+                margin: 0;
+            }
+
+            /* إبقاء قسم المشاريع والإعلانات على شكل عمود واحد لأنها تحتوي على صور ونصوص طويلة */
+            #projects .grid, 
+            .announcement-card {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -551,7 +594,7 @@
             </div>
 
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
-            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--main-color);">Al-Rasheed Company © 2026</p>
+            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--main-color);">Cloud Art © 2026</p>
             <p style="font-size: 0.9rem; color: #888; font-weight: bold;">صنع بكل فخر لدعم الكوادر الصحية السودانية</p>
         </div>
     </div>
