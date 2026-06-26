@@ -84,13 +84,25 @@
         }
         .quick-access-btn:hover, .quick-access-btn.active-btn { transform: scale(1.1) rotate(90deg); background: var(--dark-blue); }
 
+        /* القائمة السريعة (تم التحديث لتعمل بنظام الـ classes السلس) */
         .quick-menu {
-            display: none; position: fixed; bottom: 120px; left: 30px;
-            background: white; border-radius: 20px; width: 280px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2); z-index: 7999;
-            overflow-y: auto; max-height: 70vh; border: 1px solid #e2e8f0;
-            animation: slideUpNav 0.4s ease forwards;
+            position: fixed; bottom: 110px; left: 30px; background: rgba(255,255,255,0.98); 
+            backdrop-filter: blur(15px); width: 280px; max-height: 75vh; border-radius: 20px; 
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 7999; overflow-y: auto; 
+            border: 1px solid rgba(255,255,255,0.5);
+            display: block !important; 
+            visibility: hidden; opacity: 0; pointer-events: none; 
+            transform: translateY(20px) scale(0.9); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
+
+        .quick-menu.active { 
+            visibility: visible !important; 
+            opacity: 1 !important; 
+            transform: translateY(0) scale(1) !important; 
+            pointer-events: auto !important; 
+        }
+
         .quick-menu ul { list-style: none; padding: 15px; margin: 0; }
         .quick-menu li { border-bottom: 1px solid #f8fafc; margin-bottom: 5px; }
         .quick-menu li:last-child { border-bottom: none; margin-bottom: 0; }
@@ -100,11 +112,6 @@
         }
         .quick-menu li a i { color: var(--main-color); width: 25px; text-align: center; font-size: 1.2rem; }
         .quick-menu li a:hover { background: #f0fdf4; color: var(--main-color); padding-right: 25px; transform: translateX(-5px); }
-
-        @keyframes slideUpNav { 
-            from { opacity: 0; transform: translateY(30px) scale(0.9); } 
-            to { opacity: 1; transform: translateY(0) scale(1); } 
-        }
 
         /* تنسيق شريط التمرير للقائمة */
         .quick-menu::-webkit-scrollbar { width: 5px; }
@@ -156,8 +163,11 @@
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* حماية وتنسيق الهواتف الذكية */
+        /* ========================================= */
+        /* حماية وتنسيق الهواتف الذكية (التعديلات الجذرية) */
+        /* ========================================= */
         .result-info h3, .result-meta span { word-wrap: break-word; overflow-wrap: break-word; }
+        
         @media (max-width: 768px) {
             .navbar { flex-direction: column; padding: 15px 10px; }
             .nav-links { width: 100%; justify-content: flex-start; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
@@ -170,9 +180,45 @@
             .search-filters { flex-direction: column; padding: 20px; gap: 10px; margin-top: -30px; }
             .search-filters input, .search-filters select, .search-filters button { width: 100%; box-sizing: border-box; }
             
-            .result-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+            /* تعديلات بطاقة البحث للموبايل: بطاقة واحدة بعرض الشاشة مع تصغير الخطوط لمنع التداخل */
+            .result-card { 
+                padding: 15px; 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 12px; 
+            }
+            .result-info h3 { 
+                font-size: 1.1rem; 
+                margin-bottom: 10px; 
+            }
+            .result-meta { 
+                font-size: 0.8rem; 
+                gap: 8px; 
+            }
+            .result-meta span { 
+                padding: 6px 10px; 
+                font-size: 0.75rem; 
+            }
             .result-action { width: 100%; }
-            .result-action button { width: 100%; justify-content: center; }
+            .result-action button { 
+                width: 100%; 
+                justify-content: center; 
+                font-size: 0.95rem; 
+                padding: 12px; 
+            }
+
+            /* تعديلات نافذة الملخص (Modal) للموبايل */
+            .modal-content { 
+                width: 92%; 
+                padding: 25px 15px; 
+                margin: 10vh auto; 
+            }
+            #modalTitle { font-size: 1.2rem; }
+            #modalBody { font-size: 0.95rem; padding: 15px; }
+            
+            /* أزرار الوصول السريع */
+            .quick-access-btn { left: 20px; bottom: 20px; width: 60px; height: 60px; font-size: 24px; }
+            .quick-menu { left: 15px; right: 15px; width: auto; bottom: 95px; }
         }
     </style>
 </head>
@@ -224,7 +270,7 @@
         </div>
     </section>
 
-    <div class="quick-access-btn" onclick="toggleQuickMenu()" title="كل الشاشات">
+    <div class="quick-access-btn" id="quickToggleBtn" title="كل الشاشات">
         <i class="fas fa-th-large"></i>
     </div>
 
@@ -237,11 +283,6 @@
             <li><a href="training.html"><i class="fas fa-users"></i> التدريب المستمر</a></li>
             <li><a href="consult.html"><i class="fas fa-comments"></i> ركن الاستشارات</a></li>
             <li><a href="join.html"><i class="fas fa-user-plus"></i> انضم إلينا (عضوية)</a></li>
-            <li><a href="sos.html"><i class="fas fa-ambulance"></i> نداءات الاستغاثة (SOS)</a></li>
-            <li><a href="blood.html"><i class="fas fa-tint"></i> بنك الدم التفاعلي</a></li>
-            <li><a href="drugs.html"><i class="fas fa-pills"></i> دليل الأدوية السريري</a></li>
-            <li><a href="hospitals.html"><i class="fas fa-hospital-alt"></i> المستشفيات</a></li>
-            <li><a href="handover.html"><i class="fas fa-exchange-alt"></i> تسليم الوردية</a></li>
             <li><a href="calc.html"><i class="fas fa-calculator"></i> الحاسبة السريرية</a></li>
             <li><a href="snn-jobs.html" style="color: var(--main-color); background: rgba(0,168,132,0.05);"><i class="fas fa-briefcase"></i> بوابة توظيف الشبكة</a></li>
             <li><a href="activities.html"><i class="fas fa-heartbeat"></i> نبض الميدان (النشاطات)</a></li>
@@ -429,22 +470,36 @@
             document.getElementById('summaryModal').style.display = 'none'; 
         }
 
-        window.toggleQuickMenu = function() {
-            const menu = document.getElementById("quickMenu");
-            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        // ========================================================
+        // سكريبت القائمة السريعة الجديد (سلس واحترافي)
+        // ========================================================
+        const quickMenu = document.getElementById('quickMenu');
+        const quickToggleBtn = document.getElementById('quickToggleBtn');
+
+        if (quickToggleBtn && quickMenu) {
+            quickToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                quickMenu.classList.toggle('active');
+                quickToggleBtn.classList.toggle('active-btn');
+            });
         }
 
         window.onclick = function(event) {
-            const menu = document.getElementById('quickMenu');
-            const btn = document.querySelector('.quick-access-btn');
             const modal = document.getElementById('summaryModal');
             
-            if (menu && menu.style.display === 'block') {
-                if (event.target !== menu && !menu.contains(event.target) && event.target !== btn && !btn.contains(event.target)) {
-                    menu.style.display = 'none';
+            // إغلاق القائمة السريعة عند النقر خارجها
+            if (quickMenu && quickMenu.classList.contains('active')) {
+                if (!quickMenu.contains(event.target) && !quickToggleBtn.contains(event.target)) {
+                    quickMenu.classList.remove('active');
+                    quickToggleBtn.classList.remove('active-btn');
                 }
             }
-            if (event.target == modal) window.closeModal();
+            
+            // إغلاق نافذة الملخص
+            if (event.target == modal) {
+                window.closeModal();
+            }
         }
     </script>
 </body>

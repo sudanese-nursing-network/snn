@@ -140,6 +140,22 @@
             box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.1); outline: none;
         }
         
+        /* === الإضافة لمعالجة تداخل النص مع السهم في القوائم المنسدلة === */
+        .form-group select {
+            padding-left: 35px; /* إبعاد النص عن السهم الأيسر */
+            padding-right: 15px;
+            text-overflow: ellipsis; /* إضافة نقاط إذا كان النص طويلاً */
+            white-space: nowrap;
+            overflow: hidden;
+            -webkit-appearance: none; /* إخفاء السهم الافتراضي المتداخل */
+            -moz-appearance: none;
+            appearance: none;
+            /* إضافة سهم مخصص وأنيق على اليسار */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23333" viewBox="0 0 16 16"><path d="M4 6h8l-4 5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: left 15px center; 
+        }
+
         /* صندوق الشروط والمواثيق */
         .terms-box {
             background: #f8fbfb; padding: 25px; border-radius: 15px; border: 2px dashed var(--main-color);
@@ -161,17 +177,18 @@
         }
         .checkbox-group input[type="checkbox"] {
             width: 22px; height: 22px; cursor: pointer; accent-color: var(--main-color);
+            flex-shrink: 0;
         }
-        .checkbox-group label { font-weight: 700; color: var(--dark-blue); cursor: pointer; font-size: 1.1rem;}
+        .checkbox-group label { font-weight: 700; color: var(--dark-blue); cursor: pointer; font-size: 1.1rem; line-height: 1.4;}
 
         /* زر الإرسال الأساسي */
         .btn-primary {
             background: linear-gradient(135deg, var(--main-color) 0%, #00866a 100%); 
             color: white; border: none; border-radius: 50px; cursor: pointer; transition: var(--transition);
-            font-family: 'Cairo', sans-serif; font-weight: 900;
+            font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 1.2rem;
             display: inline-flex; align-items: center; justify-content: center; gap: 12px;
             box-shadow: 0 8px 25px rgba(0,168,132,0.3);
-            position: relative; overflow: hidden; width: 100%; max-width: 400px;
+            position: relative; overflow: hidden; width: 100%; max-width: 400px; padding: 15px;
             animation: pulseButton 2s infinite alternate;
         }
         .btn-primary:hover { 
@@ -249,9 +266,9 @@
         /* القائمة السريعة (Quick Menu) */
         .quick-access-btn {
             position: fixed; bottom: 30px; left: 30px;
-            width: 65px; height: 65px; background: linear-gradient(135deg, var(--main-color), #00c69a);
+            width: 70px; height: 70px; background: linear-gradient(135deg, var(--main-color), #00c69a);
             color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; cursor: pointer; box-shadow: 0 10px 25px rgba(0,168,132,0.4); z-index: 2000;
+            font-size: 28px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,168,132,0.4); z-index: 100000;
             transition: var(--transition);
             -webkit-tap-highlight-color: transparent;
         }
@@ -262,7 +279,7 @@
             background: rgba(255,255,255,0.98); border-radius: 20px; width: 280px;
             max-height: 70vh; overflow-y: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.25);
             display: block !important; visibility: hidden; opacity: 0; pointer-events: none;
-            z-index: 1999; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(15px);
+            z-index: 99999; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(15px);
             transform: translateY(20px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .quick-menu.active { visibility: visible !important; opacity: 1 !important; transform: translateY(0) scale(1) !important; pointer-events: auto !important; }
@@ -290,16 +307,34 @@
             transition: transform 0.1s ease;
         }
 
+        /* ========================================= */
+        /* التعديلات الجذرية لشاشات الجوال */
+        /* ========================================= */
         @media (max-width: 768px) { 
-            .form-grid { grid-template-columns: 1fr; } 
+            /* إبقاء حقول الفورم כعمود واحد للحفاظ على مساحة كافية للكتابة */
+            .form-grid { grid-template-columns: 1fr; gap: 15px;} 
+            
             .navbar { padding: 15px 10px; flex-direction: column; gap: 15px; }
             .nav-links { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; width: 100%; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
             .nav-links::-webkit-scrollbar { display: none; }
             .nav-links li { flex: 0 0 auto; }
-            .hero { height: auto; min-height: 30vh; padding: 40px 15px; }
+            .nav-links li a { font-size: 0.9rem; padding: 5px 10px; }
+
+            .hero { height: auto; min-height: 30vh; padding: 40px 15px; border-radius: 0 0 30px 30px; }
             .hero h1 { font-size: 2.2rem; }
-            .form-section { padding: 25px 20px; }
-            .btn-primary { width: 100%; max-width: 100%; padding: 15px; }
+            .hero p { font-size: 1rem; }
+            
+            .container { padding: 40px 10px; }
+            .form-section { padding: 25px 15px; }
+            .form-section h3 { font-size: 1.2rem; }
+            
+            .btn-primary { width: 100%; max-width: 100%; padding: 15px; font-size: 1.1rem; }
+            .checkbox-group label { font-size: 0.95rem; }
+
+            /* القائمة السريعة ونافذة المبرمج */
+            .quick-access-btn { left: 20px; bottom: 20px; width: 60px; height: 60px; font-size: 24px; }
+            .quick-menu { left: 15px; right: 15px; width: auto; bottom: 95px; }
+            .dev-content { width: 95% !important; margin: 10% auto !important; padding: 20px !important; }
         }
     </style>
 </head>
@@ -311,9 +346,14 @@
         </a>
         <ul class="nav-links">
             <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
-            <li><a href="research.html"><i class="fas fa-book-medical"></i> الأبحاث</a></li>
-            <li><a href="consult.html"><i class="fas fa-comments"></i> الاستشارات</a></li>
-            <li><a href="jobs.html" class="active" style="color: var(--main-color); background: rgba(0, 168, 132, 0.1);"><i class="fas fa-briefcase"></i> التوظيف الداخلي</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+            <li><a href="research.html"><i class="fas fa-book-medical"></i> مكتبة الأبحاث</a></li>
+            <li><a href="jobs.html"><i class="fas fa-user-md"></i> فرص العمل</a></li>
+            <li><a href="training.html"><i class="fas fa-users"></i> التدريب المستمر</a></li>
+            <li><a href="consult.html"><i class="fas fa-comments"></i> ركن الاستشارات</a></li>
+            <li><a href="join.html"><i class="fas fa-user-plus"></i> انضم إلينا (عضوية)</a></li>
+            <li><a href="calc.html"><i class="fas fa-calculator"></i> الحاسبة السريرية</a></li>
+            <li><a href="snn-jobs.html" style="color: var(--main-color); background: rgba(0,168,132,0.05); padding: 5px 10px; border-radius: 8px;"><i class="fas fa-briefcase"></i> بوابة توظيف الشبكة</a></li>
             <li><button class="nav-dev-btn" onclick="openDevModal(event)"><i class="fas fa-code"></i> المبرمج</button></li>
         </ul>
     </nav>
@@ -457,7 +497,7 @@
             
             <img src="me.jpeg" alt="المبرمج الرشيد كمال" class="dev-img" onerror="this.src='https://via.placeholder.com/150?text=Al-Rasheed'">
             
-            <h3 style="color: var(--dark-blue); margin-bottom: 5px; font-weight: 900; font-size: 1.6rem;">تطوير المبرمج: الرشيد كمال</h3>
+            <h3 style="color: var(--dark-blue); margin-bottom: 5px; font-weight: 900; font-size: 1.6rem;">تطوير المبرمج: Cloud Art</h3>
             <p style="color: #666; font-size: 1.1rem; font-weight: bold;">متخصص في حلول الويب والأنظمة الصحية</p>
             
             <div class="dev-contact-info">
@@ -467,7 +507,7 @@
             </div>
 
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
-            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--main-color);">Al-Rasheed Company © 2026</p>
+            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--main-color);">Cloud Art © 2026</p>
             <p style="font-size: 0.9rem; color: #888; font-weight: bold;">صنع بكل فخر لدعم الكوادر الصحية السودانية</p>
         </div>
     </div>

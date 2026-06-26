@@ -192,15 +192,63 @@
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* 5. إصلاحات العرض في الهواتف */
+        /* ========================================= */
+        /* 5. التعديلات الجذرية وتنسيق العرض في الهواتف */
+        /* ========================================= */
         @media (max-width: 768px) {
-            .impact-summary { flex-direction: column; gap: 20px; padding: 30px; margin: -30px 15px 30px; }
-            .act-actions { flex-direction: column; }
-            .btn-act { width: 100%; justify-content: center; padding: 12px; font-size: 1rem; }
-            .act-card { padding-right: 40px; }
-            .act-dot { right: 10px; width: 20px; height: 20px; }
-            .timeline::after { right: 18px; }
-            .act-header { padding: 60px 15px; border-radius: 0 0 30px 30px; }
+            .act-header h1 { font-size: 2rem; }
+            .act-header p { font-size: 0.95rem; }
+            
+            /* عرض الإحصائيات: ترتيبها بشكل شبكة بدلاً من عمود واحد طويل */
+            .impact-summary { 
+                display: grid; 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 15px; 
+                padding: 20px; 
+                margin: -30px 15px 30px; 
+            }
+            .impact-item:last-child { 
+                grid-column: 1 / -1; /* جعل العنصر الثالث يأخذ عرض كامل السطر */
+            }
+            
+            .act-card { padding-right: 35px; }
+            .act-dot { right: 8px; width: 18px; height: 18px; border-width: 3px; }
+            .timeline::after { right: 16px; width: 3px; }
+            
+            /* تصغير المسافات والخطوط لضمان عدم تداخل النص */
+            .act-body { padding: 15px; }
+            .act-body h2 { font-size: 1.2rem; margin-bottom: 10px; }
+            .act-body p { 
+                font-size: 0.85rem; 
+                line-height: 1.6; 
+                word-wrap: break-word; 
+                overflow-wrap: break-word; 
+                margin-bottom: 15px;
+            }
+            
+            /* عرض الأزرار: زرين في كل صف مع ضبط المسافات */
+            .act-actions { 
+                display: grid; 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 8px; 
+            }
+            .btn-act { 
+                padding: 10px; 
+                font-size: 0.8rem; 
+                justify-content: center; 
+                text-align: center; 
+                width: 100%; 
+                box-sizing: border-box; 
+            }
+            .btn-act:last-child { 
+                grid-column: 1 / -1; /* الزر الأخير يأخذ العرض كامل */
+            }
+
+            .act-header { padding: 50px 15px; border-radius: 0 0 25px 25px; }
+            
+            /* حماية القوائم السريعة وأزرار العودة */
+            .quick-access-btn { left: 20px; bottom: 20px; width: 55px; height: 55px; font-size: 24px; }
+            .quick-menu { left: 15px; right: 15px; width: auto; bottom: 90px; }
         }
     </style>
 </head>
@@ -240,7 +288,6 @@
             <li><a href="join.html"><i class="fas fa-user-plus"></i> انضم إلينا (عضوية)</a></li>
             <li><a href="calc.html"><i class="fas fa-calculator"></i> الحاسبة السريرية</a></li>
             <li><a href="snn-jobs.html" style="color: var(--main-color); background: rgba(0,168,132,0.05);"><i class="fas fa-briefcase"></i> بوابة توظيف الشبكة</a></li>
-            <li><a href="locator.html"><i class="fas fa-search-location"></i> الرادار الطبي</a></li>
             <li><a href="archive.html"><i class="fas fa-book-medical"></i> أرشيف الأبحاث</a></li>
             <li><a href="upload-research.html"><i class="fas fa-cloud-upload-alt"></i> شارك بحثك العلمي</a></li>
         </ul>
@@ -262,7 +309,7 @@
             </div>
 
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
-            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--primary-gold);">Al-Rasheed Company © 2026</p>
+            <p style="margin-top: 10px; font-weight: 900; font-size: 1.2rem; color: var(--primary-gold);">Cloud Art © 2026</p>
             <p style="font-size: 0.9rem; color: #888; font-weight: bold;">صنع بكل فخر لدعم الكوادر الصحية السودانية</p>
         </div>
     </div>
